@@ -118,7 +118,7 @@ def generar_grafico_plotly(df):
             y=df['UpperBB'],
             name="Banda Superior",
             line=dict(color='rgba(255, 0, 0, 0.3)', width=1),
-            showlegend=True
+            showlegend=False
         ),
         row=1, col=1
     )
@@ -131,7 +131,7 @@ def generar_grafico_plotly(df):
             line=dict(color='rgba(0, 255, 0, 0.3)', width=1),
             fill='tonexty',
             fillcolor='rgba(100, 100, 100, 0.1)',
-            showlegend=True
+            showlegend=False
         ),
         row=1, col=1
     )
@@ -171,7 +171,7 @@ def generar_grafico_plotly(df):
                 marker=dict(
                     symbol='triangle-up',
                     color='green',
-                    size=12
+                    size=10
                 )
             ),
             row=1, col=1
@@ -187,7 +187,7 @@ def generar_grafico_plotly(df):
                 marker=dict(
                     symbol='triangle-down',
                     color='red',
-                    size=12
+                    size=10
                 )
             ),
             row=1, col=1
@@ -199,7 +199,8 @@ def generar_grafico_plotly(df):
             x=df.index,
             y=df['RSI'],
             name="RSI",
-            line=dict(color='#ff7f0e')
+            line=dict(color='#ff7f0e'),
+            showlegend=False
         ),
         row=2, col=1
     )
@@ -212,7 +213,8 @@ def generar_grafico_plotly(df):
             x=df.index,
             y=df['MACD'],
             name="MACD",
-            line=dict(color='#2ca02c')
+            line=dict(color='#2ca02c'),
+            showlegend=False
         ),
         row=3, col=1
     )
@@ -233,14 +235,15 @@ def generar_grafico_plotly(df):
             x=df.index,
             y=volatilidad,
             name="Volatilidad",
-            marker_color='#17becf'
+            marker_color='#17becf',
+            showlegend=False
         ),
         row=4, col=1
     )
     
     fig.update_layout(
         height=800,  # Ajustar la altura general
-        title_text="Gráfico de Análisis Técnico",
+        title_text=" ",
         template="plotly_white",
         legend=dict(orientation="h", yanchor="bottom", y=1.02),
         margin=dict(t=50, b=50, l=50, r=50),
