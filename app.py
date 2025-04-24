@@ -74,7 +74,7 @@ def calcular_indicadores(df):
     df['MACD'] = ema12 - ema26
     df['Signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
     
-    # Bollinger Bands (Corregido)
+    # Bollinger Bands
     df['SMA20'] = df['CUPs'].rolling(20).mean()
     df['UpperBB'] = df['SMA20'] + (2 * df['CUPs'].rolling(20).std())
     df['LowerBB'] = df['SMA20'] - (2 * df['CUPs'].rolling(20).std())
@@ -86,26 +86,30 @@ def calcular_indicadores(df):
     return df.dropna()
 
 def generar_grafico_plotly(df):
-    """Crea gráficos interactivos con Bollinger Bands"""
+    """Crea gráficos interactivos con Plotly"""
     fig = make_subplots(
         rows=4, cols=1,
         shared_xaxes=True,
         vertical_spacing=0.03,
-        subplot_titles=("Precio y Bandas de Bollinger", "RSI", "MACD", "Volatilidad"),
+        subplot_titles=(
+            "Precio y Bandas de Bollinger", 
+            "RSI", 
+            "MACD", 
+            "Volatilidad"
+        ),
         row_heights=[0.5, 0.2, 0.2, 0.1]
     )
     
-    # Gráfico principal con Bollinger Bands
+    # Gráfico principal
     fig.add_trace(
         go.Scatter(
-            x=df.index, 
-            y=df['CUPs'], 
-            name="Precio", 
-            line=dict(color='#1f77b4'),
-            row=1, 
-            col=1
+            x=df.index,
+            y=df['CUPs'],
+            name="Precio",
+            line=dict(color='#1f77b4')
         ),
-    row=1, col=1)
+        row=1, col=1
+    )
     
     # Bandas de Bollinger
     fig.add_trace(
@@ -116,7 +120,8 @@ def generar_grafico_plotly(df):
             line=dict(color='rgba(255, 0, 0, 0.3)', width=1),
             showlegend=True
         ),
-    row=1, col=1)
+        row=1, col=1
+    )
     
     fig.add_trace(
         go.Scatter(
@@ -124,73 +129,122 @@ def generar_grafico_plotly(df):
             y=df['LowerBB'],
             name="Banda Inferior",
             line=dict(color='rgba(0, 255, 0, 0.3)', width=1),
-            fill='tonexty',  # Rellena el área entre Upper y Lower
+            fill='tonexty',
             fillcolor='rgba(100, 100, 100, 0.1)',
             showlegend=True
         ),
-    row=1, col=1)
+        row=1, col=1
+    )
     
     # Medias móviles
     fig.add_trace(
         go.Scatter(
-            x=df.index, 
-            y=df['SMA30'], 
-            name="SMA 30", 
-            line=dict(dash='dot', color='orange')),
-    row=1, col=1)
+            x=df.index,
+            y=df['SMA30'],
+            name="SMA 30",
+            line=dict(dash='dot', color='orange')
+        ),
+        row=1, col=1
+    )
     
     fig.add_trace(
         go.Scatter(
-            x=df.index, 
-            y=df['SMA200'], 
-            name="SMA 200", 
-            line=dict(dash='dot', color='purple')),
-    row=1, col=1)
+            x=df.index,
+            y=df['SMA200'],
+            name="SMA 200",
+            line=dict(dash='dot', color='purple')
+        ),
+        row=1, col=1
+    )
+    
+    # Señales de compra/venta
+    compras = df[df['Señal'] == 2]
+    ventas = df[df['Señal'] == -2]
+    
+    if not compras.empty:
+        fig.add_trace(
+            go.Scatter(
+                x=compras.index,
+                y=compras['CUPs'],
+                mode='markers',
+                name='Compra',
+                marker=dict(
+                    symbol='triangle-up',
+                    color='green',
+                    size=12
+                )
+            ),
+            row=1, col=1
+        )
+    
+    if not ventas.empty:
+        fig.add_trace(
+            go.Scatter(
+                x=ventas.index,
+                y=ventas['CUPs'],
+                mode='markers',
+                name='Venta',
+                marker=dict(
+                    symbol='triangle-down',
+                    color='red',
+                    size=12
+                )
+            ),
+            row=1, col=1
+        )
     
     # RSI
     fig.add_trace(
         go.Scatter(
-            x=df.index, 
-            y=df['RSI'], 
-            name="RSI", 
-            line=dict(color='#ff7f0e')),
-    row=2, col=1)
-    
+            x=df.index,
+            y=df['RSI'],
+            name="RSI",
+            line=dict(color='#ff7f0e')
+        ),
+        row=2, col=1
+    )
     fig.add_hline(y=70, line_dash="dot", line_color="red", row=2, col=1)
     fig.add_hline(y=30, line_dash="dot", line_color="green", row=2, col=1)
     
     # MACD
     fig.add_trace(
         go.Scatter(
-            x=df.index, 
-            y=df['MACD'], 
-            name="MACD", 
-            line=dict(color='#2ca02c')),
-    row=3, col=1)
-    
+            x=df.index,
+            y=df['MACD'],
+            name="MACD",
+            line=dict(color='#2ca02c')
+        ),
+        row=3, col=1
+    )
     fig.add_trace(
         go.Scatter(
-            x=df.index, 
-            y=df['Signal'], 
-            name="Señal", 
-            line=dict(color='#d62728')),
-    row=3, col=1)
+            x=df.index,
+            y=df['Signal'],
+            name="Señal",
+            line=dict(color='#d62728')
+        ),
+        row=3, col=1
+    )
     
     # Volatilidad
     volatilidad = df['CUPs'].pct_change().abs() * 100
     fig.add_trace(
         go.Bar(
-            x=df.index, 
-            y=volatilidad, 
-            name="Volatilidad", 
-            marker_color='#17becf'),
-    row=4, col=1)
+            x=df.index,
+            y=volatilidad,
+            name="Volatilidad",
+            marker_color='#17becf'
+        ),
+        row=4, col=1
+    )
     
     fig.update_layout(
-        height=1000,
-        title_text="Monitor del Dólar Informal en Cuba - Bandas de Bollinger",
+        height=800,  # Ajustar la altura general
+        title_text="Gráfico de Análisis Técnico",
         template="plotly_white",
-        legend=dict(orientation="h", yanchor="bottom", y=1.02)
+        legend=dict(orientation="h", yanchor="bottom", y=1.02),
+        margin=dict(t=50, b=50, l=50, r=50),
+        autosize=True,  # Permitir que el gráfico se ajuste automáticamente
     )
     
     return fig.to_html(full_html=False)
@@ -200,9 +254,15 @@ def home():
     """Endpoint principal: muestra el gráfico"""
     df = obtener_datos_actuales()
     if not df.empty:
-        df = calcular_indicadores(df)
-        grafico = generar_grafico_plotly(df)
-        return render_template("index.html", grafico=grafico)
+        try:
+            df = calcular_indicadores(df)
+            if df.empty:
+                return render_template("index.html", grafico="<p>No hay datos suficientes</p>")
+            grafico = generar_grafico_plotly(df)
+            return render_template("index.html", grafico=grafico)
+        except Exception as e:
+            print(f"Error generando gráfico: {str(e)}")
+            return render_template("index.html", grafico="<p>Error interno</p>")
     return render_template("index.html", grafico="<p>Error cargando datos</p>")
 
 if __name__ == "__main__":
